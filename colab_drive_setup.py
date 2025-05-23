@@ -11,7 +11,18 @@ import sys
 import shutil
 import subprocess
 from pathlib import Path
-from google.colab import drive
+
+# Check if running in Google Colab
+def is_colab():
+    try:
+        import google.colab
+        return True
+    except ImportError:
+        return False
+
+# Only import drive if in Colab
+if is_colab():
+    from google.colab import drive
 
 def extract_file_id_from_drive_link(link):
     """Extract the file ID from a Google Drive link."""
@@ -40,9 +51,16 @@ def setup_from_shared_folder(folder_link):
     Returns:
         bool: True if setup was successful, False otherwise
     """
+    # Check if running in Colab
+    if not is_colab():
+        print("This script is designed to be run in Google Colab.")
+        print("Please run this script in a Google Colab notebook.")
+        return False
+        
     try:
         # Mount Google Drive
         print("Mounting Google Drive...")
+        from google.colab import drive
         drive.mount('/content/drive')
         
         # Extract folder ID from link
