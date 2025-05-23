@@ -55,38 +55,37 @@ def download_shap_e_models(output_dir):
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
     
-    # Create a simple script to download the models
-    script_path = os.path.join(output_dir, "download_models.py")
-    with open(script_path, "w") as f:
-        f.write("""
-import os
-import torch
-from shap_e.models.download import load_model, load_config
-
-# Set the output directory
-output_dir = os.path.dirname(os.path.abspath(__file__))
-
-# Download the transmitter model
-print("Downloading transmitter model...")
-transmitter = load_model('transmitter', device='cpu')
-torch.save(transmitter, os.path.join(output_dir, 'transmitter.pt'))
-
-# Download the text-to-3d model
-print("Downloading text-to-3d model...")
-text_to_3d = load_model('text300M', device='cpu')
-torch.save(text_to_3d, os.path.join(output_dir, 'text300M.pt'))
-
-# Download the diffusion config
-print("Downloading diffusion config...")
-diffusion_config = load_config('diffusion')
-torch.save(diffusion_config, os.path.join(output_dir, 'diffusion_config.pt'))
-
-print("All models downloaded successfully!")
-""")
-    
-    # Run the script
-    command = f"python {script_path}"
-    return run_command(command)
+    try:
+        # Try to import Shap-E
+        import shap_e
+        from shap_e.models.download import load_model, load_config
+        
+        print("Downloading and caching models...")
+        
+        # Download the text-to-3d model
+        print("Downloading text-to-3d model...")
+        text_to_3d = load_model('text300M', device='cpu')
+        
+        # Download the diffusion config
+        print("Downloading diffusion config...")
+        diffusion_config = load_config('diffusion')
+        config_path = os.path.join(output_dir, 'diffusion_config.pt')
+        torch.save(diffusion_config, config_path)
+        print(f"Saved diffusion config to {config_path}")
+        
+        # Instead of saving the transmitter model directly (which causes pickling errors),
+        # we'll just load it to ensure it's cached by Shap-E
+        print("Caching transmitter model...")
+        transmitter = load_model('transmitter', device='cpu')
+        print("Transmitter model cached successfully!")
+        
+        print("All models downloaded and cached successfully!")
+        return True
+    except Exception as e:
+        print(f"Error downloading Shap-E models: {str(e)}")
+        print("\nTIP: If you're seeing a pickling error, the models may still be cached and usable.")
+        print("The error is likely related to saving the model, not loading it.")
+        return False
 
 
 def update_config_for_shap_e(config_dir, models_dir):
