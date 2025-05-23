@@ -56,7 +56,8 @@ def download_shap_e_models(output_dir):
     os.makedirs(output_dir, exist_ok=True)
     
     try:
-        # Try to import Shap-E
+        # Import required modules
+        import torch
         import shap_e
         from shap_e.models.download import load_model, load_config
         
