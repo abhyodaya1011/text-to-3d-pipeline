@@ -996,12 +996,45 @@ def create_basic_ring_mesh(prompt, index, output_dir, latent=None):
             for i in range(19):
                 for j in range(9):
                     idx1 = i * 10 + j + 1
-                    idx2 = i * 10 + j + 2
-                    idx3 = (i + 1) * 10 + j + 2
-                    idx4 = (i + 1) * 10 + j + 1
-                    f.write(f"f {idx1} {idx2} {idx3} {idx4}\n")
-        
-        return output_file
+                # Create a simple cube mesh as a placeholder
+                output_file = os.path.join(output_dir, f"generated_ring_{i+1}.obj")
+                with open(output_file, "w") as f:
+                    f.write("# Generated Ring (Error Fallback)\n")
+                    f.write("# Prompt: " + prompt + "\n")
+                    f.write("v -1.0 -1.0 -1.0\n")
+                    f.write("v -1.0 -1.0 1.0\n")
+                    f.write("v -1.0 1.0 -1.0\n")
+                    f.write("v -1.0 1.0 1.0\n")
+                    f.write("v 1.0 -1.0 -1.0\n")
+                    f.write("v 1.0 -1.0 1.0\n")
+                    f.write("v 1.0 1.0 -1.0\n")
+                    f.write("v 1.0 1.0 1.0\n")
+                    f.write("f 1 3 4 2\n")
+                    f.write("f 5 7 8 6\n")
+                    f.write("f 1 5 6 2\n")
+                    f.write("f 3 7 8 4\n")
+                    f.write("f 1 3 7 5\n")
+                    f.write("f 2 4 8 6\n")
+
+                # Create a metadata file with component labels
+                metadata_file = os.path.join(
+                    output_dir, f"generated_ring_{i+1}_components.json"
+                )
+                metadata = {
+                    "prompt": prompt,
+                    "components": [
+                        {"name": "Metal_Head", "material": "gold"},
+                        {"name": "Metal_Shank", "material": "gold"},
+                        {"name": "Head_Center_Stone", "material": "diamond"},
+                        {"name": "Head_Accent_Stone", "material": "diamond"},
+                    ],
+                }
+
+                with open(metadata_file, "w") as f:
+                    json.dump(metadata, f, indent=2)
+
+            logger.info(f"Generated {len(prompts)} fallback ring models in {output_dir}")
+            return True
 
 
 def main():
